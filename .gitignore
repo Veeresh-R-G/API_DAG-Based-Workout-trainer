@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+wheels/
+*.whl
+.eggs/
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+.claude
+venv/
+ENV/
+env.bak/
+venv.bak/
+*env*/
+model/*.safetensors
+# Distribution / packaging
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# PyTorch / HuggingFace model artifacts
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+model/
+models/
+checkpoints/
+runs/
+wandb/
+mlruns/
+outputs/
+logs/
+
+# HuggingFace cache
+.cache/
+~/.cache/huggingface/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Docker
+.dockerignore
+
+# Secrets / config
+*.env
+.env.*
+secrets.json
+config.local.*
+
+# Logs
+*.log
+*.out
