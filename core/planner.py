@@ -446,5 +446,31 @@ class PlanGenerator:
                 except Exception:
                     pass
 
+        # ── Rule 7: Quality session chain across weeks ─────────────────
+        # Each quality session depends on the previous week's quality session
+        # This encodes: you can't do Week 6 intervals
+        # if you never did Week 5 intervals
+        all_nodes = self.graph.nodes
+        quality_by_week = {}
+        for node in all_nodes:
+            if node.is_quality_session:
+                quality_by_week.setdefault(node.week, []).append(node)
+
+        for week in sorted(quality_by_week.keys()):
+            if week - 1 in quality_by_week:
+                prev_quality = quality_by_week[week - 1][0]
+                curr_quality = quality_by_week[week][0]
+                try:
+                    self.graph.add_edge(DependencyEdge(
+                        source_id=prev_quality.node_id,
+                        target_id=curr_quality.node_id,
+                        constraint_type=ConstraintType.HARD,
+                        reason=EdgeReason.PROGRESSIVE_OVERLOAD,
+                        min_gap_days=7,
+                        notes="Quality session builds on previous week's quality"
+                    ))
+                except Exception:
+                    pass
+
     # Day constants
     MON, TUE, WED, THU, FRI, SAT, SUN = 1, 2, 3, 4, 5, 6, 7

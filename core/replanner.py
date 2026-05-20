@@ -106,19 +106,13 @@ class DynamicReplanner:
         self.graph = graph
 
     def mark_complete(self, node_id: str) -> ReplanningSummary:
-        """
-        Mark a workout as completed.
-        Checks if this unlocks any previously blocked nodes.
-        """
         node = self.graph.get_node(node_id)
         quality_before = self.graph.get_plan_quality_score()
         node.mark_complete()
-        quality_after = self.graph.get_plan_quality_score()
 
         summary = ReplanningSummary(
             triggered_by=node_id,
             plan_quality_before=quality_before,
-            plan_quality_after=quality_after,
         )
         summary.add_change(NodeChange(
             node_id=node_id,
@@ -126,6 +120,28 @@ class DynamicReplanner:
             reason=f"Athlete completed {node.label}",
         ))
 
+        # ── NEW: Check what this completion unlocks ────────────────
+        # Find successors whose ALL hard prerequisites are now complete
+        newly_unlocked = []
+        for succ in self.graph.get_successors(node_id):
+            hard_preds = [
+                e for e in self.graph.get_edges_to(succ.node_id)
+                if e.is_hard
+            ]
+            all_satisfied = all(
+                self.graph.get_node(e.source_id).status
+                in (NodeStatus.COMPLETE, NodeStatus.SKIPPED)
+                for e in hard_preds
+            )
+            if all_satisfied and succ.status == NodeStatus.PENDING:
+                newly_unlocked.append(succ)
+                summary.add_change(NodeChange(
+                    node_id=succ.node_id,
+                    action=ReplannedAction.NO_CHANGE,
+                    reason=f"{succ.label} is now unlocked — all prerequisites complete",
+                ))
+
+        summary.plan_quality_after = self.graph.get_plan_quality_score()
         return summary
 
     def mark_missed(self, node_id: str) -> ReplanningSummary:
@@ -214,27 +230,24 @@ class DynamicReplanner:
 
     def _find_hard_affected(self, missed_node_id: str) -> List[str]:
         """
-        Find all nodes with a HARD dependency chain
-        flowing from the missed node.
+        BFS through HARD edges to find all transitively affected nodes.
 
-        Uses BFS on the forward graph, but only follows HARD edges.
-        Soft constraint violations don't require replanning.
+        Example:
+        A ──HARD──→ B ──HARD──→ C ──HARD──→ D
+
+        Miss A → affects B, C, D (not just B)
         """
         affected = []
-        visited = set()
+        visited = {missed_node_id}
         queue = [missed_node_id]
 
         while queue:
             current_id = queue.pop(0)
-            hard_edges = [
-                e for e in self.graph.get_edges_from(current_id)
-                if e.is_hard
-            ]
-            for edge in hard_edges:
-                if edge.target_id not in visited:
+            for edge in self.graph.get_edges_from(current_id):
+                if edge.is_hard and edge.target_id not in visited:
                     visited.add(edge.target_id)
                     affected.append(edge.target_id)
-                    queue.append(edge.target_id)
+                    queue.append(edge.target_id)   # ← key: recurse
 
         return affected
 
