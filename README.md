@@ -221,6 +221,4 @@ Python 3.10+
 
 ## Project Context
 
-Built as part of a portfolio targeting ML/SWE roles at **Strava** and **Runna**.
-
-Runna's job spec explicitly mentions *"white box modelling approaches"* — a DAG with explicit constraint edges is the most interpretable possible training plan representation. Every scheduling decision has a traceable edge behind it.
+Runna explicitly mentions *"white box modelling approaches"* — a DAG with explicit constraint edges is the most interpretable possible training plan representation. Every scheduling decision has a traceable edge behind it.
